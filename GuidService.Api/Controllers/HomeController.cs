@@ -2,24 +2,27 @@
 using Azure.Data.Tables;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using WebApplication1.Models;
+using GuidService.Api.Models;
 
-namespace WebApplication1.Controllers
+namespace GuidService.Api.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly TableClient _tableClient;
+        private readonly InstanceSettings _instanceSettings;
 
-        public HomeController(ILogger<HomeController> logger, TableSettings tableSettings)
+        public HomeController(
+            TableSettings tableSettings, 
+            InstanceSettings instanceSettings)
         {
-            _logger = logger;
             _tableClient = new TableClient(tableSettings.ConnectionString, TableGuidEntity.Table);
+            _instanceSettings = instanceSettings;
         }
 
         public async Task<IActionResult> Index(CancellationToken token = default)
         {
             ViewData["GUID"] = await GenerateGuidAsync(HttpContext, token);
+            ViewData["InstanceId"] = _instanceSettings.InstanceId;
             return View();
         }
 
@@ -48,6 +51,7 @@ namespace WebApplication1.Controllers
             {
                 PartitionKey = TableGuidEntity.Partition,
                 RowKey = guid,
+                InstanceId = _instanceSettings.InstanceId,
                 RemoteIpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
             }, token);
     }
@@ -61,6 +65,7 @@ namespace WebApplication1.Controllers
 
         public string PartitionKey { get; set; }
         public string RowKey { get; set; } // holds generated guid
+        public string InstanceId { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
     }

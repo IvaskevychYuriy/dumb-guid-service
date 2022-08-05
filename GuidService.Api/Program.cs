@@ -9,6 +9,12 @@ builder.Services.AddControllersWithViews();
 var tableSettings = builder.Configuration.GetSection(nameof(TableSettings)).Get<TableSettings>();
 builder.Services.AddSingleton(tableSettings);
 
+var instanceSettings = new InstanceSettings
+{
+    InstanceId = builder.Configuration.GetValue<string>(nameof(InstanceSettings.InstanceId))
+};
+builder.Services.AddSingleton(instanceSettings);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -33,4 +39,9 @@ app.Run();
 public class TableSettings
 {
     public string ConnectionString { get; set; }
+}
+
+public class InstanceSettings
+{
+    public string InstanceId { get; set; }
 }
